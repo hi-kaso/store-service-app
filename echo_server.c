@@ -1,3 +1,4 @@
+//gcc echo_server.c -o echo_server.exe -lws2_32 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
