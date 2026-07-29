@@ -27,7 +27,8 @@ public class display_client {
 
                 BufferedReader reader =
                         new BufferedReader(
-                                new InputStreamReader(socket.getInputStream()));
+                                new InputStreamReader(socket.getInputStream(),
+                                "UTF-8"));
         ) {
 
             // 自分は注文表示用であることを親機へ通知

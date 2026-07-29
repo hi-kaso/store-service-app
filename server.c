@@ -12,6 +12,19 @@ typedef int socklen_t;
 
 #define PORT 8080
 #define CLOSE_SOCKET(s) closesocket(s)
+#define MAX_MENU 100
+
+typedef struct{
+    char name[100];
+    int count;
+} MenuCount;
+
+void updateOrderCount(char *data, int mode);
+void saveCSV(void);
+void showHistory(void);
+
+MenuCount menuList[MAX_MENU];
+int menuSize = 0;
 
 int main(void)
 {
@@ -149,6 +162,17 @@ int main(void)
         }
 
         buffer[size]='\0';
+        if(strncmp(buffer,"ADD:",4)==0){
+            updateOrderCount(buffer+4,1);
+            saveCSV();
+        }
+        else if(strncmp(buffer,"DELETE:",7)==0){
+            updateOrderCount(buffer+7,-1);
+        saveCSV();
+        }
+        else if(strcmp(buffer,"LOG")==0){
+            showHistory();
+        }
 
         printf("注文:%s\n",buffer);
 
@@ -173,4 +197,78 @@ int main(void)
     WSACleanup();
 
     return 0;
+}
+
+
+
+
+
+/*----------------------------------
+ 商品の注文数を更新
+ mode = 1  → 注文追加
+ mode = -1 → 注文取消
+----------------------------------*/
+void updateOrderCount(char *data, int mode)
+{
+    for(int i=0;i<menuSize;i++)
+    {
+        if(strcmp(menuList[i].name,data)==0)
+        {
+            menuList[i].count += mode;
+
+            if(menuList[i].count < 0)
+                menuList[i].count = 0;
+
+            return;
+        }
+    }
+
+    // 新しい商品
+    strcpy(menuList[menuSize].name,data);
+    menuList[menuSize].count = (mode > 0) ? 1 : 0;
+    menuSize++;
+}
+
+
+/*----------------------------------
+ CSVへ保存（Excelで開ける）
+----------------------------------*/
+void saveCSV()
+{
+    FILE *fp = fopen("order_history.csv","w");
+
+    if(fp == NULL)
+    {
+        printf("CSV保存失敗\n");
+        return;
+    }
+
+    fprintf(fp,"商品名,注文数\n");
+
+    for(int i=0;i<menuSize;i++)
+    {
+        fprintf(fp,"%s,%d\n",
+                menuList[i].name,
+                menuList[i].count);
+    }
+
+    fclose(fp);
+}
+
+
+/*----------------------------------
+ コンソールに履歴表示
+----------------------------------*/
+void showHistory()
+{
+    printf("\n===== 注文履歴 =====\n");
+
+    for(int i=0;i<menuSize;i++)
+    {
+        printf("%s : %d\n",
+               menuList[i].name,
+               menuList[i].count);
+    }
+
+    printf("====================\n");
 }
