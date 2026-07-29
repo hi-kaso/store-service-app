@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
  
 public class display_client extends JFrame {
  
-    private static final String SERVER_IP = "10.130.0.50"; // ★サーバーの物理IPを指定
+    private static final String SERVER_IP = "127.0.0.1"; // ★サーバーの物理IPを指定
     private static final int PORT = 8080;
  
     private JPanel ordersContainer;
