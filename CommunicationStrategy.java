@@ -1,3 +1,4 @@
+//strategyパターン使用
 public interface CommunicationStrategy {
     //private Socket socket;
     // 接続開始
