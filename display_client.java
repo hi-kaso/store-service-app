@@ -15,8 +15,8 @@ public class display_client extends JFrame {
  
     private JPanel ordersContainer;
     private int orderCount = 0;
-    private OrderCardFactory factory;
- 
+    private OrderCardFactory factory = new NormalCardFactory();
+    
     public display_client() {
         setTitle("注文表示モニター (GUI)");
         setSize(500, 700);
@@ -25,7 +25,10 @@ public class display_client extends JFrame {
  
         // 注文カードを縦に並べるパネル
         ordersContainer = new JPanel();
-        ordersContainer.setLayout(new BoxLayout(ordersContainer, BoxLayout.Y_AXIS));
+        //ordersContainer.setLayout(new BoxLayout(ordersContainer, BoxLayout.Y_AXIS));
+
+        //これは横に並べるパネル
+        ordersContainer.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
  
         // スクロールバー付きのパネルを設定
         JScrollPane scrollPane = new JScrollPane(ordersContainer);
@@ -55,12 +58,21 @@ public class display_client extends JFrame {
  
             String message;
             while ((message = reader.readLine()) != null) {
+
                 final String rawData = message.trim();
-                // 空行や接続時の応答メッセージ等はスキップ
-                if (rawData.isEmpty() || rawData.equals("DISPLAY") || rawData.equals("ORDER")) {
+
+
+                if(rawData.equals("RESET_ORDER_NUMBER")){
+
+                    SwingUtilities.invokeLater(() -> {
+
+                        orderCount = 0;
+
+                        JOptionPane.showMessageDialog(this,"注文番号をリセットしました");
+                    });
                     continue;
                 }
- 
+
                 // GUIスレッドで画面を更新
                 SwingUtilities.invokeLater(() -> addOrderCard(rawData));
             }
@@ -80,7 +92,7 @@ public class display_client extends JFrame {
 
         if (card != null) {
             orderCount++;
-            ordersContainer.add(card, 0);
+            ordersContainer.add(card);
             ordersContainer.revalidate();
             ordersContainer.repaint();
         }

@@ -82,6 +82,7 @@ public class Order_client extends JFrame {
         JButton removeButton = new JButton("選択した商品を削除");
         JButton clearButton = new JButton("カートを空にする");
         JButton sendButton = new JButton("注文を送信");
+        JButton resetButton = new JButton("注文番号をリセット");
         sendButton.setBackground(new Color(60, 179, 113));
         sendButton.setForeground(Color.WHITE);
         sendButton.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -89,6 +90,7 @@ public class Order_client extends JFrame {
         btnPanel.add(removeButton);
         btnPanel.add(clearButton);
         btnPanel.add(sendButton);
+        btnPanel.add(resetButton);
 
         bottomPanel.add(calcPanel, BorderLayout.NORTH);
         bottomPanel.add(btnPanel, BorderLayout.SOUTH);
@@ -164,6 +166,27 @@ public class Order_client extends JFrame {
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "送信エラー: " + ex.getMessage(), "エラー", JOptionPane.ERROR_MESSAGE);
             }
+        });
+
+        resetButton.addActionListener(e -> {
+
+            try {
+
+                strategy.send("RESET_ORDER_NUMBER");
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "次回注文から番号をリセットします"
+                );
+
+            } catch(Exception ex){
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "送信エラー"
+                );
+            }
+
         });
 
         // ウインドウ閉じ時の切断処理

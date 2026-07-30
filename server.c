@@ -19,7 +19,7 @@ typedef struct{
     int count;
 } MenuCount;
 
-void updateOrderCount(char *data, int mode);
+void updateOrderCount(char *data);
 void saveCSV(void);
 void showHistory(void);
 
@@ -162,16 +162,24 @@ int main(void)
         }
 
         buffer[size]='\0';
-        if(strncmp(buffer,"ADD:",4)==0){
-            updateOrderCount(buffer+4,1);
+
+        if(strncmp(buffer,"ORDER_CART:",11)==0)
+        {
+            updateOrderCount(buffer + 11);
             saveCSV();
-        }
-        else if(strncmp(buffer,"DELETE:",7)==0){
-            updateOrderCount(buffer+7,-1);
-        saveCSV();
         }
         else if(strcmp(buffer,"LOG")==0){
             showHistory();
+        }
+        if(strcmp(buffer,"RESET_ORDER_NUMBER")==0)
+        {
+            send(display_fd,
+                "RESET_ORDER_NUMBER\n",
+                strlen("RESET_ORDER_NUMBER\n"),0);
+
+            printf("注文番号リセット要求\n");
+
+            continue;
         }
 
         printf("注文:%s\n",buffer);
@@ -208,32 +216,53 @@ int main(void)
  mode = 1  → 注文追加
  mode = -1 → 注文取消
 ----------------------------------*/
-void updateOrderCount(char *data, int mode)
+void updateOrderCount(char *data)
 {
-    for(int i=0;i<menuSize;i++)
+    char temp[1024];
+
+    strcpy(temp,data);
+
+
+    char *token = strtok(temp,",");
+
+
+    while(token != NULL)
     {
-        if(strcmp(menuList[i].name,data)==0)
+
+        char name[100];
+        int count;
+
+
+        sscanf(token,"%[^x]x%d",name,&count);
+
+
+        int found = 0;
+
+
+        for(int i=0;i<menuSize;i++)
         {
-            menuList[i].count += mode;
-
-            if(menuList[i].count < 0)
-                menuList[i].count = 0;
-
-            return;
+            if(strcmp(menuList[i].name,name)==0)
+            {
+                menuList[i].count += count;
+                found = 1;
+                break;
+            }
         }
-    }
 
-    // 新しい商品
-    strcpy(menuList[menuSize].name,data);
-    menuList[menuSize].count = (mode > 0) ? 1 : 0;
-    menuSize++;
+
+        if(!found)
+        {
+            strcpy(menuList[menuSize].name,name);
+            menuList[menuSize].count=count;
+            menuSize++;
+        }
+
+
+        token=strtok(NULL,",");
+    }
 }
 
-
-/*----------------------------------
- CSVへ保存（Excelで開ける）
-----------------------------------*/
-void saveCSV()
+void saveCSV(void)
 {
     FILE *fp = fopen("order_history.csv","w");
 
@@ -256,10 +285,7 @@ void saveCSV()
 }
 
 
-/*----------------------------------
- コンソールに履歴表示
-----------------------------------*/
-void showHistory()
+void showHistory(void)
 {
     printf("\n===== 注文履歴 =====\n");
 
